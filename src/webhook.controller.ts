@@ -1,4 +1,5 @@
 import { Get, Controller, Render, Res, Param, All } from '@nestjs/common';
+import { WebsocketGateway } from './websocket.gateway';
 
 type RequestType = {
   id: string;
@@ -32,6 +33,14 @@ const parseObjectProps = (obj: Record<string, string>) => {
 
 @Controller()
 export class WebhookController {
+
+  constructor(private readonly websocketGateway: WebsocketGateway) {}
+
+  @Get()
+  hello() {
+    return { message: "Meu Webhook Favorito"}
+  }
+  
   @Get('app/:id')
   @Render('index')
   root(@Param('id') id: string) {
@@ -65,7 +74,7 @@ export class WebhookController {
   saveRequest(@Res() request, @Param('id') id: string) {
     if (!requests[id]) requests[id] = [];
 
-    requests[id].push({
+    const newRequest = {
       id,
       path: request.req.params[0],
       date: new Date().toLocaleString(),
@@ -73,8 +82,10 @@ export class WebhookController {
       query: parseObjectProps(request.req.query),
       headers: parseObjectProps(request.req.headers),
       body: parseObjectProps(request.req.body),
-    });
+    };
 
+    requests[id].push(newRequest);
+    this.websocketGateway.newRequest(newRequest)
     request.end();
   }
 }

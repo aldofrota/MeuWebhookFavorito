@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { WebhookController } from './webhook.controller';
+import { WebsocketGateway } from './websocket.gateway';
 
 @Module({
-  imports: [],
+  imports: [WebsocketGateway],
   controllers: [WebhookController],
-  providers: [],
+  providers: [WebsocketGateway],
 })
 export class AppModule {}
